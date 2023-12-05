@@ -279,5 +279,77 @@
     "columns": {
       "prompt": "content"
     }
+  },
+  "culturax_ja": {
+    "hf_hub_url": "uonlp/CulturaX",
+    "subset": "ja",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "culturax_en": {
+    "hf_hub_url": "uonlp/CulturaX",
+    "subset": "en",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "wikipedia_en_2022": {
+    "hf_hub_url": "graelo/wikipedia",
+    "subset": "20230601.en",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "wikipedia_ja_2022": {
+    "hf_hub_url": "graelo/wikipedia",
+    "subset": "20230601.ja",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "xlsum_ja": {
+    "hf_hub_url": "csebuetnlp/xlsum",
+    "subset": "japanese",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "xlsum_en": {
+    "hf_hub_url": "csebuetnlp/xlsum",
+    "subset": "english",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "slim_pajama_en": {
+    "hf_hub_url": "cerebras/SlimPajama-627B",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "databricks_dolly_15k_ja":{
+    "hf_hub_url": "kunishou/databricks-dolly-15k-ja",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  },
+  "hh_rlhf_49k_ja":{
+    "hf_hub_url": "fujiki/japanese_hh-rlhf-49k",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  },
+  "llm_japanese_dataset_ja":{
+    "hf_hub_url": "izumi-lab/llm-japanese-dataset",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
   }
 }
