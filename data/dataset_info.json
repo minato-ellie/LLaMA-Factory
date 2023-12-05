@@ -328,6 +328,12 @@
       "prompt": "text"
     }
   },
+  "code_stack_en": {
+    "hf_hub_url": "bigcode/the-stack-dedup",
+    "columns": {
+      "prompt": "content"
+    }
+  },
   "databricks_dolly_15k_ja":{
     "hf_hub_url": "kunishou/databricks-dolly-15k-ja",
     "columns": {
