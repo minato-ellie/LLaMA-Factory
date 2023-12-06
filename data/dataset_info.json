@@ -357,5 +357,19 @@
       "query": "input",
       "response": "output"
     }
+  },
+  "github_code_all_mit":{
+    "hf_hub_url": "codeparrot/github-code",
+    "subset":"all-mit",
+    "columns": {
+      "prompt": "code"
+    }
+  },
+  "github_code_all_apache":{
+    "hf_hub_url": "codeparrot/github-code",
+    "subset":"all-apache-2.0",
+    "columns": {
+      "prompt": "code"
+    }
   }
 }
