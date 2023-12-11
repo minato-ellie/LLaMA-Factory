@@ -1,3 +1,5 @@
+import re
+
 import torch
 from typing import TYPE_CHECKING
 from peft import PeftModel, TaskType, LoraConfig, get_peft_model
@@ -58,6 +60,19 @@ def init_adapter(
             if not any(trainable_layer in name for trainable_layer in trainable_layers):
                 param.requires_grad_(False)
             else:
+                param.data = param.data.to(torch.float32)
+
+    if finetuning_args.finetuning_type == "fix" and is_trainable:
+        logger.info("Fine-tuning method: Fix")
+        
+        patterns = finetuning_args.name_module_trainable
+        trainable_layers = [name for name, _ in model.named_parameters() if any(re.search(pattern, name) for pattern in patterns)]
+        
+        for name, param in model.named_parameters():
+            if not any(trainable_layer in name for trainable_layer in trainable_layers):
+                param.requires_grad_(False)
+            else:
+                logger.info("Trainable layer: {}".format(name))
                 param.data = param.data.to(torch.float32)
 
     if finetuning_args.finetuning_type == "lora":
