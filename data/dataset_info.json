@@ -297,7 +297,7 @@
     "ms_hub_url": "AI-ModelScope/starcoderdata",
     "columns": {
       "prompt": "content"
-    },
+    }
   },
   "culturax_ja": {
     "hf_hub_url": "uonlp/CulturaX",
