@@ -9,6 +9,15 @@ DEFAULT_MODULE = defaultdict(str)
 
 DEFAULT_TEMPLATE = defaultdict(str)
 
+FILEEXT2TYPE = {
+    "arrow": "arrow",
+    "csv": "csv",
+    "json": "json",
+    "jsonl": "json",
+    "parquet": "parquet",
+    "txt": "text"
+}
+
 IGNORE_INDEX = -100
 
 LAYERNORM_NAMES = {"norm", "ln"}
@@ -16,6 +25,8 @@ LAYERNORM_NAMES = {"norm", "ln"}
 LOG_FILE_NAME = "trainer_log.jsonl"
 
 METHODS = ["full", "freeze", "lora"]
+
+PEFT_METHODS = ["lora"]
 
 SUBJECTS = ["Average", "STEM", "Social Sciences", "Humanities", "Other"]
 
@@ -382,6 +393,25 @@ register_model_group(
         "Mistral-7B-Chat": {
             DownloadSource.DEFAULT: "mistralai/Mistral-7B-Instruct-v0.1",
             DownloadSource.MODELSCOPE: "AI-ModelScope/Mistral-7B-Instruct-v0.1"
+        },
+        "Mistral-7B-v0.2-Chat": {
+            DownloadSource.DEFAULT: "mistralai/Mistral-7B-Instruct-v0.2",
+            DownloadSource.MODELSCOPE: "AI-ModelScope/Mistral-7B-Instruct-v0.2"
+        }
+    },
+    template="mistral"
+)
+
+
+register_model_group(
+    models={
+        "Mixtral-8x7B": {
+            DownloadSource.DEFAULT: "mistralai/Mixtral-8x7B-v0.1",
+            DownloadSource.MODELSCOPE: "AI-ModelScope/Mixtral-8x7B-v0.1"
+        },
+        "Mixtral-8x7B-Chat": {
+            DownloadSource.DEFAULT: "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            DownloadSource.MODELSCOPE: "AI-ModelScope/Mixtral-8x7B-Instruct-v0.1"
         }
     },
     template="mistral"
@@ -401,9 +431,13 @@ register_model_group(
 
 register_model_group(
     models={
-        "Phi1.5-1.3B": {
+        "Phi-1.5-1.3B": {
             DownloadSource.DEFAULT: "microsoft/phi-1_5",
             DownloadSource.MODELSCOPE: "allspace/PHI_1-5"
+        },
+        "Phi-2-2.7B": {
+            DownloadSource.DEFAULT: "microsoft/phi-2",
+            DownloadSource.MODELSCOPE: "AI-ModelScope/phi-2"
         }
     },
     module="Wqkv"
@@ -540,6 +574,10 @@ register_model_group(
             DownloadSource.DEFAULT: "xverse/XVERSE-65B",
             DownloadSource.MODELSCOPE: "xverse/XVERSE-65B"
         },
+        "XVERSE-65B-2": {
+            DownloadSource.DEFAULT: "xverse/XVERSE-65B-2",
+            DownloadSource.MODELSCOPE: "xverse/XVERSE-65B-2"
+        },
         "XVERSE-7B-Chat": {
             DownloadSource.DEFAULT: "xverse/XVERSE-7B-Chat",
             DownloadSource.MODELSCOPE: "xverse/XVERSE-7B-Chat"
@@ -547,6 +585,10 @@ register_model_group(
         "XVERSE-13B-Chat": {
             DownloadSource.DEFAULT: "xverse/XVERSE-13B-Chat",
             DownloadSource.MODELSCOPE: "xverse/XVERSE-13B-Chat"
+        },
+        "XVERSE-65B-Chat": {
+            DownloadSource.DEFAULT: "xverse/XVERSE-65B-Chat",
+            DownloadSource.MODELSCOPE: "xverse/XVERSE-65B-Chat"
         }
     },
     template="xverse"
@@ -578,9 +620,17 @@ register_model_group(
             DownloadSource.DEFAULT: "01-ai/Yi-34B",
             DownloadSource.MODELSCOPE: "01ai/Yi-34B"
         },
+        "Yi-6B-Chat": {
+            DownloadSource.DEFAULT: "01-ai/Yi-6B-Chat",
+            DownloadSource.MODELSCOPE: "01ai/Yi-6B-Chat"
+        },
         "Yi-34B-Chat": {
             DownloadSource.DEFAULT: "01-ai/Yi-34B-Chat",
             DownloadSource.MODELSCOPE: "01ai/Yi-34B-Chat"
+        },
+        "Yi-6B-int8-Chat": {
+            DownloadSource.DEFAULT: "01-ai/Yi-6B-Chat-8bits",
+            DownloadSource.MODELSCOPE: "01ai/Yi-6B-Chat-8bits"
         },
         "Yi-34B-int8-Chat": {
             DownloadSource.DEFAULT: "01-ai/Yi-34B-Chat-8bits",

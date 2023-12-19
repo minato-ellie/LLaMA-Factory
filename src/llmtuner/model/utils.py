@@ -1,5 +1,5 @@
+import math
 import torch
-import inspect
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
 from transformers.utils import cached_file
@@ -10,7 +10,7 @@ from llmtuner.extras.logging import get_logger
 from llmtuner.hparams import ModelArguments, FinetuningArguments
 
 if TYPE_CHECKING:
-    from transformers.modeling_utils import PreTrainedModel
+    from transformers import PretrainedConfig, PreTrainedModel, PreTrainedTokenizer
     from llmtuner.hparams import DataArguments
 
 
@@ -85,10 +85,7 @@ def get_modelcard_args(
     }
 
 
-def load_valuehead_params(
-    path_or_repo_id: str,
-    model_args: "ModelArguments"
-) -> Dict[str, torch.Tensor]:
+def load_valuehead_params(path_or_repo_id: str, model_args: "ModelArguments") -> Dict[str, torch.Tensor]:
     r"""
     Loads value head parameters from Hugging Face Hub or local disk.
 
@@ -96,21 +93,9 @@ def load_valuehead_params(
     """
     kwargs = {
         "path_or_repo_id": path_or_repo_id,
-        "cache_dir": model_args.cache_dir
+        "cache_dir": model_args.cache_dir,
+        "token": model_args.hf_hub_token
     }
-
-    if "token" in inspect.signature(cached_file).parameters:
-        kwargs["token"] = model_args.hf_hub_token
-    elif "use_auth_token" in inspect.signature(cached_file).parameters: # for transformers==4.31.0
-        kwargs["use_auth_token"] = model_args.hf_hub_token
-    else:
-        logger.warning("Ignore `hf_hub_token` since matched parameter is not found.")
-
-    try:
-        vhead_file = cached_file(filename=WEIGHTS_NAME, **kwargs)
-        return torch.load(vhead_file, map_location="cpu")
-    except Exception as err:
-        logger.info("Failed to load {}: {}".format(WEIGHTS_NAME, str(err)))
 
     try:
         from safetensors import safe_open
@@ -123,8 +108,22 @@ def load_valuehead_params(
     except Exception as err:
         logger.info("Failed to load {}: {}".format(SAFE_WEIGHTS_NAME, str(err)))
 
+    try:
+        vhead_file = cached_file(filename=WEIGHTS_NAME, **kwargs)
+        return torch.load(vhead_file, map_location="cpu")
+    except Exception as err:
+        logger.info("Failed to load {}: {}".format(WEIGHTS_NAME, str(err)))
+
     logger.warning("Provided path ({}) does not contain valuehead weights.".format(path_or_repo_id))
     return None
+
+
+def noisy_mean_initialization(embed_weight: torch.Tensor, num_new_tokens: int):
+    embedding_dim = embed_weight.size(1)
+    avg_weight = embed_weight[:-num_new_tokens].mean(dim=0, keepdim=True)
+    noise_weight = torch.empty_like(avg_weight[-num_new_tokens:])
+    noise_weight.normal_(mean=0, std=(1.0 / math.sqrt(embedding_dim)))
+    embed_weight[-num_new_tokens:] = avg_weight + noise_weight
 
 
 def prepare_model_for_training(
@@ -146,17 +145,6 @@ def prepare_model_for_training(
             if param.ndim == 1 and any(ln_name in name for ln_name in layernorm_names):
                 param.data = param.data.to(torch.float32)
         logger.info("Upcasting weights in layernorm in float32.")
-
-    if finetuning_args.neft_alpha > 1e-6:
-        def neftune_forward_hook(module: torch.nn.Module, args: Tuple[torch.Tensor], output: torch.Tensor):
-            if module.training:
-                dims = torch.tensor(output.size(1) * output.size(2))
-                mag_norm = finetuning_args.neft_alpha / torch.sqrt(dims)
-                output = output + torch.zeros_like(output).uniform_(-mag_norm, mag_norm)
-            return output
-
-        model.get_input_embeddings().register_forward_hook(neftune_forward_hook)
-        logger.info("Using noisy embedding with alpha={:.2f}".format(finetuning_args.neft_alpha))
 
     if use_gradient_checkpointing and getattr(model, "supports_gradient_checkpointing", False):
         if hasattr(model, "enable_input_require_grads"):
@@ -181,3 +169,31 @@ def prepare_model_for_training(
             output_layer.register_forward_hook(fp32_forward_post_hook)
 
     return model
+
+
+def resize_embedding_layer(model: "PreTrainedModel", tokenizer: "PreTrainedTokenizer") -> None:
+    r"""
+    Resize token embeddings.
+    """
+    current_embedding_size = model.get_input_embeddings().weight.size(0)
+    if len(tokenizer) > current_embedding_size:
+        if not isinstance(model.get_output_embeddings(), torch.nn.Linear):
+            logger.warning("Current model does not support resizing token embeddings.")
+            return
+
+        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=64)
+        new_embedding_size = model.get_input_embeddings().weight.size(0)
+        num_new_tokens = new_embedding_size - current_embedding_size
+        noisy_mean_initialization(model.get_input_embeddings().weight.data, num_new_tokens)
+        noisy_mean_initialization(model.get_output_embeddings().weight.data, num_new_tokens)
+
+        logger.info("Resized token embeddings from {} to {}.".format(current_embedding_size, new_embedding_size))
+
+
+def register_autoclass(config: "PretrainedConfig", model: "PreTrainedModel", tokenizer: "PreTrainedTokenizer"):
+    if "AutoConfig" in getattr(config, "auto_map", {}):
+        config.__class__.register_for_auto_class()
+    if "AutoModelForCausalLM" in getattr(config, "auto_map", {}):
+        model.__class__.register_for_auto_class()
+    if "AutoTokenizer" in tokenizer.init_kwargs.get("auto_map", {}):
+        tokenizer.__class__.register_for_auto_class()

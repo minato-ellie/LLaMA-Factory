@@ -403,6 +403,21 @@ register_template(
 
 
 register_template(
+    name="codegeex2",
+    prefix=[
+        {"token": "[gMASK]"},
+        {"token": "sop"},
+        "{{system}}"
+    ],
+    prompt=[
+        "{{query}}"
+    ],
+    system="",
+    sep=[]
+)
+
+
+register_template(
     name="deepseek",
     prefix=[
         "{{system}}"
@@ -541,9 +556,7 @@ register_template(
         "[INST] {{query}} [/INST]"
     ],
     system="",
-    sep=[
-        " "
-    ]
+    sep=[]
 )
 
 
@@ -619,9 +632,6 @@ register_template(
 )
 
 
-r"""
-Supports language model inference without histories.
-"""
 register_template(
     name="vanilla",
     prefix=[],
@@ -723,6 +733,9 @@ register_template(
     system="",
     sep=[
         "<|im_end|>\n"
+    ],
+    stop_words=[
+        "<|im_end|>"
     ],
     efficient_eos=True
 )

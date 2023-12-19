@@ -21,11 +21,10 @@ class Manager:
             self.all_elems["top"]["lang"],
             self.all_elems["top"]["model_name"],
             self.all_elems["top"]["model_path"],
-            self.all_elems["top"]["checkpoints"],
+            self.all_elems["top"]["adapter_path"],
             self.all_elems["top"]["finetuning_type"],
             self.all_elems["top"]["quantization_bit"],
             self.all_elems["top"]["template"],
-            self.all_elems["top"]["system_prompt"],
             self.all_elems["top"]["flash_attn"],
             self.all_elems["top"]["shift_attn"],
             self.all_elems["top"]["rope_scaling"]
